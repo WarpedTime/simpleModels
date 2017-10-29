@@ -17,7 +17,6 @@ let lastAddedCat = new Cat(defaultData);
 let lastAddedDog = new Dog(defaultDogData);
 
 const hostIndex = (req, res) => {
-
   res.render('index', {
     currentNameCat: lastAddedCat.name,
     currentNameDog: lastAddedDog.name,
@@ -59,7 +58,15 @@ const readDog = (req, res) => {
 };
 
 const hostPage1 = (req, res) => {
-data = {};
+  const data = {};
+  const callbackDog = (err, docs) => {
+    if (err) {
+      return res.json({ err }); // if error, return it
+    }
+    // return success
+    data.dogs = docs;
+    return res.render('page1', { dogs: data.dogs, cats: data.cats });
+  };
   const callback = (err, docs) => {
     if (err) {
       return res.json({ err }); // if error, return it
@@ -68,25 +75,16 @@ data = {};
     // return success
     data.cats = docs;
     readAllDogs(req, res, callbackDog);
-  };
-  const callbackDog = (err, docs) => {
-    if (err) {
-      return res.json({ err }); // if error, return it
-    }
-    // return success
-    data.dogs = docs;
-    return res.render('page1', {dogs: data.dogs, cats: data.cats});
+    return true;
   };
 
   readAllCats(req, res, callback);
-  //readAllDogs(req, res, callbackDog, data);
+  // readAllDogs(req, res, callbackDog, data);
 };
 const hostPage2 = (req, res) => {
-
   res.render('page2');
 };
 const hostPage3 = (req, res) => {
-
   const callback = (err, docs) => {
     if (err) {
       return res.json({ err }); // if error, return it
@@ -99,13 +97,12 @@ const hostPage3 = (req, res) => {
   readAllDogs(req, res, callback);
 };
 const hostPage4 = (req, res) => {
-data = {};
   const callback = (err, docs) => {
     if (err) {
       return res.json({ err }); // if error, return it
     }
     // return success
-    return res.render('page4', {dogs: docs,});
+    return res.render('page4', { dogs: docs });
   };
   readAllDogs(req, res, callback);
 };
@@ -146,12 +143,11 @@ const setCatName = (req, res) => {
   });
 
   // if error, return it
-  savePromise.catch((err) => res.json({ err }));
+  savePromise.catch(err => res.json({ err }));
 
   return res;
 };
 const searchCatName = (req, res) => {
-
   if (!req.query.name) {
     return res.json({ error: 'Name is required to perform a search' });
   }
@@ -173,7 +169,6 @@ const searchCatName = (req, res) => {
   });
 };
 const updateLastCat = (req, res) => {
-
   lastAddedCat.bedsOwned++;
   const savePromise = lastAddedCat.save();
 
@@ -181,7 +176,7 @@ const updateLastCat = (req, res) => {
   savePromise.then(() => res.json({ name: lastAddedCat.name, beds: lastAddedCat.bedsOwned }));
 
   // if save error, just return an error for now
-  savePromise.catch((err) => res.json({ err }));
+  savePromise.catch(err => res.json({ err }));
 };
 
 const setDogName = (req, res) => {
@@ -207,17 +202,16 @@ const setDogName = (req, res) => {
 
   savePromise.then(() => {
     lastAddedDog = newDog;
-    
+
     res.json({ name: lastAddedDog.name, breed: lastAddedDog.breed, age: lastAddedDog.age });
   });
 
   // if error, return it
-  savePromise.catch((err) => res.json({ err }));
+  savePromise.catch(err => res.json({ err }));
 
   return res;
 };
 const searchDogName = (req, res) => {
-
   if (!req.query.name) {
     return res.json({ error: 'Name is required to perform a search' });
   }
@@ -239,43 +233,47 @@ const searchDogName = (req, res) => {
   });
 };
 const updateLastDog = (req, res) => {
-
   lastAddedDog.age++;
   const savePromise = lastAddedDog.save();
 
   // send back the name as a success for now
-  savePromise.then(() => res.json({ name: lastAddedDog.name, breed: lastAddedDog.breed, age: lastAddedDog.age }));
+  savePromise.then(() =>
+  res.json({ name: lastAddedDog.name, breed: lastAddedDog.breed, age: lastAddedDog.age }));
 
   // if save error, just return an error for now
-  savePromise.catch((err) => res.json({ err }));
+  savePromise.catch(err => res.json({ err }));
 };
 const increaseDog = (req, res) => {
-   if (!req.query.name) {
+  if (!req.query.name) {
     return res.json({ error: 'Name is required to perform a search' });
   }
+  let dog = {};
 
-  return Dog.findByName(req.query.name, (err, doc) => {
+  const callback = (errA, doc) => {
+    dog = doc;
     // errs, handle them
-    if (err) {
-      return res.json({ err }); // if error, return it
+    if (errA) {
+      return res.json({ errA }); // if error, return it
     }
     if (!doc) {
       return res.json({ error: 'No dogs found' });
     }
+    dog.age++;
     
-    doc.age++;
-    const savePromise = doc.save();
-    
-    const foundDog = { name: doc.name, breed: doc.breed, age: doc.age };
+    const savePromise = dog.save();
+    const foundDog = { name: dog.name, breed: dog.breed, age: dog.age };
 
-    savePromise.then( () => {
+    savePromise.then(() => {
       res.json({ name: foundDog.name, breed: foundDog.breed, age: foundDog.age });
       return res.json(foundDog);
-    } );
-  
+    });
+
     // if save error, just return an error for now
-    savePromise.catch((err) => res.json({ err }));
-  });
+    savePromise.catch(err => res.json({ err }));
+    return savePromise;
+  };
+
+  Dog.findByName(req.query.name, callback );
 };
 
 
