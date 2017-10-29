@@ -274,6 +274,7 @@ const increaseDog = (req, res) => {
   };
 
   Dog.findByName(req.query.name, callback );
+  return true;
 };
 
 
