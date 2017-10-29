@@ -8,20 +8,11 @@
   
   <!-- links or URLs are always GET resources as they are getting (retrieving) a resource -->
   <a href="/">Home</a>
-  <b>Page 1</b>
+  <a href="/page1">Page 1</a>
   <a href="/page2">Page 2</a>
   <a href="/page3">Page 3</a>
-  <a href="/page4">Page 4</a>
+  <b>Page 4</b>
   <a href="/getName">Show Name</a>
-  
-  {{#if cats}}
-    <p>Cat List:</p>
-    <ul>
-      {{#each cats}}
-        <li> {{this.name}} has {{this.bedsOwned}} beds.</li>
-      {{/each}}
-    </ul>
-  {{/if}}
   
   {{#if dogs}}
   <p>Dog List:</p>
